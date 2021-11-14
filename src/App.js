@@ -104,7 +104,7 @@ function App() {
   return isLoading ? (
     <Loader />
   ) : (
-    <Container>
+    <Container className="mt-5">
       <div>
         <h2>S&P 500 Total Returns</h2>
         <div style={{ margin: 25 }}>
