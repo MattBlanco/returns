@@ -2,6 +2,7 @@ import "./App.css";
 import React, { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Spinner from "react-bootstrap/Spinner";
+import Container from "react-bootstrap/Container";
 import Slider, { SliderTooltip } from "rc-slider";
 import "rc-slider/assets/index.css";
 
@@ -35,8 +36,7 @@ function Loader() {
 
 function App() {
   const [isLoading, setLoading] = useState(true);
-  const [returns, setReturns] = useState([]);
-  const [currentYears, setCurrentYears] = useState([]);
+  const [allReturns, setAllReturns] = useState([]);
   const [currentReturns, setCurrentReturns] = useState([]);
   const [value, setValue] = useState([1926, 2020]);
   const proxyurl = "https://cors-light-anytime.herokuapp.com/"; //personal host for cors proxy
@@ -47,7 +47,7 @@ function App() {
       fetch(proxyurl + returnsjson)
         .then((response) => response.json())
         .then((data) => {
-          setReturns(data.reverse());
+          setAllReturns(data.reverse());
           setCurrentReturns(data.reverse());
           calculateCumulativeReturns(data.reverse());
           setLoading(false);
@@ -78,8 +78,13 @@ function App() {
           currentReturns.map(({ year, totalReturn, cumulativeReturn }) => (
             <tr key={year}>
               <td>{year}</td>
-              <td>{totalReturn}</td>
-              <td>{cumulativeReturn}</td>
+              <td
+                align="right"
+                className={totalReturn < 0 ? "text-danger" : ""}
+              >
+                {totalReturn}
+              </td>
+              <td align="right">{cumulativeReturn}</td>
             </tr>
           ))}
       </tbody>
@@ -89,9 +94,9 @@ function App() {
   const handleChange = (value) => {
     console.log(value);
     calculateCumulativeReturns(
-      returns.slice(
-        returns.findIndex((i) => i.year === value[0]),
-        returns.findIndex((i) => i.year === value[1]) + 1
+      allReturns.slice(
+        allReturns.findIndex((i) => i.year === value[0]),
+        allReturns.findIndex((i) => i.year === value[1]) + 1
       )
     );
   };
@@ -99,28 +104,31 @@ function App() {
   return isLoading ? (
     <Loader />
   ) : (
-    <div>
-      <div style={{ width: 400, margin: 50 }}>
-        <p>Select Desired Years</p>
-        <Range
-          min={value[0]}
-          max={value[1]}
-          defaultValue={value}
-          tipFormatter={(value) => `${value}`}
-          onAfterChange={(event) => handleChange(event)}
-        />
+    <Container>
+      <div>
+        <h2>S&P 500 Total Returns</h2>
+        <div style={{ margin: 25 }}>
+          <p>Select Desired Years</p>
+          <Range
+            min={value[0]}
+            max={value[1]}
+            defaultValue={value}
+            tipFormatter={(value) => `${value}`}
+            onAfterChange={(event) => handleChange(event)}
+          />
+        </div>
+        <Table striped bordered hover size="sm">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th style={{ textAlign: "right" }}>Total Returns</th>
+              <th style={{ textAlign: "right" }}>Cumulative Returns</th>
+            </tr>
+          </thead>
+          {renderContent()}
+        </Table>
       </div>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Year</th>
-            <th>Total Returns</th>
-            <th>Cumulative Returns</th>
-          </tr>
-        </thead>
-        {renderContent()}
-      </Table>
-    </div>
+    </Container>
   );
 }
 
